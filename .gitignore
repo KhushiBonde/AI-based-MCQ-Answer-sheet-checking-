@@ -1,0 +1,32 @@
+# Node dependencies
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Python dependencies
+.venv/
+venv/
+env/
+ENV/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Environment variables
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+.env*.local
+
+# Output files
+output/
+
+# OS/IDE files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
