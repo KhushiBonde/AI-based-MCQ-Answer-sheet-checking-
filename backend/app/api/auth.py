@@ -4,7 +4,7 @@ auth.py
 Auth endpoints — thin wrappers over Supabase Auth.
 Supabase handles all token management; we just forward responses.
 """
-from fastapi import APIRouter, HTTPException, Header, Depends
+from fastapi import APIRouter, HTTPException, Header, Depends, Request
 from pydantic import BaseModel, EmailStr
 from app.core.supabase_client import get_supabase
 from app.core.deps import require_auth, UserContext
@@ -187,12 +187,21 @@ async def resend_verification(body: ResetRequest):
         raise HTTPException(status_code=400, detail=str(e))
 
 @router.get("/google")
-async def google_signin():
+async def google_signin(request: Request):
     """Get the Google OAuth login URL."""
     try:
         sb = get_supabase()
-        # Front-end should redirect to the returned URL
-        res = sb.auth.sign_in_with_oauth({"provider": "google", "options": {"redirectTo": "http://localhost:5173/auth/callback"}})
+        # Determine the origin dynamically from request headers
+        origin = request.headers.get("origin") or request.headers.get("referer")
+        if origin:
+            origin = origin.rstrip("/")
+            from urllib.parse import urlparse
+            parsed = urlparse(origin)
+            redirect_to = f"{parsed.scheme}://{parsed.netloc}/auth/callback"
+        else:
+            redirect_to = "http://localhost:5173/auth/callback"
+
+        res = sb.auth.sign_in_with_oauth({"provider": "google", "options": {"redirectTo": redirect_to}})
         return {"url": res.url}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
