@@ -191,17 +191,20 @@ async def google_signin(request: Request):
     """Get the Google OAuth login URL."""
     try:
         sb = get_supabase()
-        # Determine the origin dynamically from request headers
+        # Determine redirect URL dynamically based on Request headers
         origin = request.headers.get("origin") or request.headers.get("referer")
         if origin:
+            # Strip trailing slash
             origin = origin.rstrip("/")
+            # If the referer/origin contains a path, extract only scheme and netloc
             from urllib.parse import urlparse
             parsed = urlparse(origin)
-            redirect_to = f"{parsed.scheme}://{parsed.netloc}/auth/callback"
+            redirect_url = f"{parsed.scheme}://{parsed.netloc}/auth/callback"
         else:
-            redirect_to = "http://localhost:5173/auth/callback"
+            redirect_url = "http://localhost:5173/auth/callback"
 
-        res = sb.auth.sign_in_with_oauth({"provider": "google", "options": {"redirectTo": redirect_to}})
+        # Front-end should redirect to the returned URL
+        res = sb.auth.sign_in_with_oauth({"provider": "google", "options": {"redirectTo": redirect_url}})
         return {"url": res.url}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
