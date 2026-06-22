@@ -19,13 +19,16 @@ from app.api import auth, keys, check, results, batch, generator, classes, stude
 
 # ── App setup ────────────────────────────────────────────────────────────────
 
+IS_VERCEL = os.environ.get("VERCEL") == "1"
+API_PREFIX = "" if IS_VERCEL else "/api"
+
 app = FastAPI(
     title="Markix API",
     description="AI-powered MCQ answer sheet grading — backend service",
     version="1.0.0",
-    docs_url="/api/docs",
-    redoc_url="/api/redoc",
-    openapi_url="/api/openapi.json",
+    docs_url=f"{API_PREFIX}/docs" if API_PREFIX else "/docs",
+    redoc_url=f"{API_PREFIX}/redoc" if API_PREFIX else "/redoc",
+    openapi_url=f"{API_PREFIX}/openapi.json" if API_PREFIX else "/openapi.json",
 )
 
 # ── CORS ─────────────────────────────────────────────────────────────────────
@@ -65,14 +68,14 @@ async def global_exception_handler(request: Request, exc: Exception):
 
 # ── Routes ───────────────────────────────────────────────────────────────────
 
-app.include_router(auth.router,  prefix="/api/auth",  tags=["Authentication"])
-app.include_router(keys.router,  prefix="/api/keys",  tags=["Answer Keys"])
-app.include_router(check.router,   prefix="/api",       tags=["OMR Check"])
-app.include_router(results.router, prefix="/api",       tags=["Results"])
-app.include_router(batch.router,   prefix="/api",       tags=["Batch"])
-app.include_router(generator.router, prefix="/api",     tags=["Generator"])
-app.include_router(classes.router,   prefix="/api/classes", tags=["Classes"])
-app.include_router(students.router,  prefix="/api/students", tags=["Students"])
+app.include_router(auth.router,  prefix=f"{API_PREFIX}/auth",  tags=["Authentication"])
+app.include_router(keys.router,  prefix=f"{API_PREFIX}/keys",  tags=["Answer Keys"])
+app.include_router(check.router,   prefix=f"{API_PREFIX}",       tags=["OMR Check"])
+app.include_router(results.router, prefix=f"{API_PREFIX}",       tags=["Results"])
+app.include_router(batch.router,   prefix=f"{API_PREFIX}",       tags=["Batch"])
+app.include_router(generator.router, prefix=f"{API_PREFIX}",     tags=["Generator"])
+app.include_router(classes.router,   prefix=f"{API_PREFIX}/classes", tags=["Classes"])
+app.include_router(students.router,  prefix=f"{API_PREFIX}/students", tags=["Students"])
 
 
 # ── Health ───────────────────────────────────────────────────────────────────
